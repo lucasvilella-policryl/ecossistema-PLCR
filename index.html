@@ -643,11 +643,6 @@
 
             if (!produtos) {
                 produtos = [
-                    { id: '1', sku: 'POL-001', descricao: 'Tinta Acrílica Branca 18L', linha: 'Tintas', quantidade: 150, estoqueMinimo: 50, foto: '', ativo: true, ultimaAtualizacao: new Date().toISOString() },
-                    { id: '2', sku: 'POL-002', descricao: 'Verniz Acrílico 3.6L', linha: 'Vernizes', quantidade: 35, estoqueMinimo: 40, foto: '', ativo: true, ultimaAtualizacao: new Date().toISOString() },
-                    { id: '3', sku: 'POL-003', descricao: 'Primer Acrílico 18L', linha: 'Primers', quantidade: 80, estoqueMinimo: 30, foto: '', ativo: true, ultimaAtualizacao: new Date().toISOString() },
-                    { id: '4', sku: 'POL-004', descricao: 'Massa Acrílica 25kg', linha: 'Massas', quantidade: 25, estoqueMinimo: 20, foto: '', ativo: true, ultimaAtualizacao: new Date().toISOString() },
-                    { id: '5', sku: 'POL-005', descricao: 'Selador Acrílico 18L', linha: 'Seladores', quantidade: 15, estoqueMinimo: 25, foto: '', ativo: true, ultimaAtualizacao: new Date().toISOString() }
                 ];
                 storage.set('policryl-produtos', produtos);
             }
@@ -659,20 +654,12 @@
 
             if (!responsaveis) {
                 responsaveis = [
-                    { id: '1', nome: 'João', sobrenome: 'Silva', departamento: 'Estoque', ativo: true },
-                    { id: '2', nome: 'Maria', sobrenome: 'Santos', departamento: 'Comercial', ativo: true },
-                    { id: '3', nome: 'Pedro', sobrenome: 'Costa', departamento: 'Qualidade', ativo: true }
                 ];
                 storage.set('policryl-responsaveis', responsaveis);
             }
 
             if (!linhas) {
                 linhas = [
-                    { id: '1', codigo: 'TIN', nome: 'Tintas' },
-                    { id: '2', codigo: 'VER', nome: 'Vernizes' },
-                    { id: '3', codigo: 'PRI', nome: 'Primers' },
-                    { id: '4', codigo: 'MAS', nome: 'Massas' },
-                    { id: '5', codigo: 'SEL', nome: 'Seladores' }
                 ];
                 storage.set('policryl-linhas', linhas);
             }
@@ -940,7 +927,7 @@
             return `
                 <div class="consulta-box">
                     <div class="consulta-search">
-                        <input type="text" placeholder="Ex: POL-001" value="${state.consultaSKU}" oninput="state.consultaSKU = this.value">
+                        <input type="text" placeholder="Ex: XXX-XX-XXXX" value="${state.consultaSKU}" oninput="state.consultaSKU = this.value">
                         <button class="btn btn-primary" onclick="render()">🔍 Buscar</button>
                     </div>
 
@@ -1146,7 +1133,7 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>SKU *</label>
-                                <input type="text" id="prod-sku" placeholder="Ex: POL-001" value="${state.editingItem?.sku || ''}" required>
+                                <input type="text" id="prod-sku" placeholder="Ex: XXX-XX-XXXX" value="${state.editingItem?.sku || ''}" required>
                             </div>
                             <div class="form-group">
                                 <label>Descrição *</label>
@@ -1326,11 +1313,11 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Código da Linha *</label>
-                                <input type="text" id="linha-codigo" placeholder="Ex: TIN, VER" value="${state.editingItem?.codigo || ''}" required>
+                                <input type="text" id="linha-codigo" placeholder="SKU da Linha" value="${state.editingItem?.codigo || ''}" required>
                             </div>
                             <div class="form-group">
                                 <label>Nome da Linha *</label>
-                                <input type="text" id="linha-nome" placeholder="Ex: Tintas, Vernizes" value="${state.editingItem?.nome || ''}" required>
+                                <input type="text" id="linha-nome" placeholder="Descrição da Linha" value="${state.editingItem?.nome || ''}" required>
                             </div>
                         </div>
                         <div style="display: flex; gap: 12px; margin-top: 24px;">
@@ -1615,3 +1602,4 @@
     </script>
 </body>
 </html>
+
