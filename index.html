@@ -95,34 +95,7 @@
             text-align: center;
         }
         
-        .role-selector {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .role-btn {
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .role-btn.active-role {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-        }
-        .role-btn:hover:not(.active-role) {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
+        /* O seletor de role foi removido conforme solicitado */
 
         /* DEPARTAMENTOS SCREEN (Omie Style) */
         .departamentos-container {
@@ -819,11 +792,12 @@
             editingItem: null,
             theme: 'light',
             tipoMovimento: 'entrada',
-            loginRole: 'admin' 
+            loginRole: 'admin' // Mantido para simular a busca no login, mas o seletor visual foi removido
         };
 
         // ==================== INIT DATA ====================
         function initData() {
+            // Usuários: Apenas Admin (Lucas), Operador e Leitor
             let usuarios = storage.get('policryl-usuarios');
             if (!usuarios) {
                 usuarios = [
@@ -834,8 +808,9 @@
                 storage.set('policryl-usuarios', usuarios);
             }
 
+            // Produtos
             let produtos = storage.get('policryl-produtos');
-            if (!produtos) {
+            if (!produtos || produtos.length === 0) {
                 produtos = [
                     { id: '1', sku: 'POL-001', descricao: 'Tinta Acrílica Branca 18L', linha: 'Tintas', quantidade: 150, estoqueMinimo: 50, valorCusto: 89.90, valorVenda: 159.90, foto: 'https://via.placeholder.com/150/f97316/ffffff?text=POL-001', ativo: true, visivel: true, ultimaAtualizacao: new Date().toISOString() },
                     { id: '2', sku: 'POL-002', descricao: 'Verniz Acrílico 3.6L', linha: 'Vernizes', quantidade: 35, estoqueMinimo: 40, valorCusto: 45.90, valorVenda: 89.90, foto: 'https://via.placeholder.com/150/3b82f6/ffffff?text=POL-002', ativo: true, visivel: true, ultimaAtualizacao: new Date().toISOString() },
@@ -848,6 +823,7 @@
 
             state.produtos = produtos;
             state.movimentacoes = storage.get('policryl-movimentacoes') || [];
+            // Responsáveis devem ser mantidos aqui para a movimentação
             state.responsaveis = storage.get('policryl-responsaveis') || [
                 { id: '1', nome: 'João', sobrenome: 'Silva', departamento: 'Estoque', ativo: true },
                 { id: '2', nome: 'Maria', sobrenome: 'Santos', departamento: 'Comercial', ativo: true },
@@ -878,10 +854,14 @@
             render();
         }
 
-        function login(email, password, role) {
+        function findUserByEmail(email) {
             const usuarios = storage.get('policryl-usuarios');
-            const user = usuarios.find(u => u.email === email && u.password === password && u.role === role);
-            if (user) {
+            return usuarios.find(u => u.email === email);
+        }
+
+        function login(email, password) {
+            const user = findUserByEmail(email);
+            if (user && user.password === password) {
                 state.currentUser = user;
                 storage.set('policryl-current-user', user);
                 state.currentView = 'departamentos';
@@ -901,9 +881,8 @@
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-            const role = state.loginRole;
             
-            if (login(email, password, role)) {
+            if (login(email, password)) {
                 state.currentView = 'departamentos';
                 render();
             } else {
@@ -911,21 +890,21 @@
                 if (alertDiv) {
                     alertDiv.innerHTML = `
                         <div class="alert alert-error" style="margin-bottom: 20px;">
-                            Credenciais ou Perfil de Acesso incorretos. Senha de teste padrão: 'password'
+                            Email ou Senha incorretos. Tente: lucas.vilella@policryl.com.br / password
                         </div>
                     `;
                     setTimeout(() => {
                         alertDiv.innerHTML = '';
-                    }, 3000);
+                    }, 4000);
                 }
             }
             return false;
         }
-
-        function setLoginRole(role) {
-            state.loginRole = role;
+        
+        // Função para preencher automaticamente (removida do login screen)
+        function setLoginDefaults(role) {
             const emailInput = document.getElementById('login-email');
-            
+            const passInput = document.getElementById('login-password');
             if (role === 'admin') {
                 emailInput.value = 'lucas.vilella@policryl.com.br';
             } else if (role === 'operador') {
@@ -933,8 +912,7 @@
             } else {
                 emailInput.value = 'leitor@policryl.com.br';
             }
-            document.getElementById('login-password').value = 'password';
-            render();
+            passInput.value = 'password';
         }
         
         function abrirDepartamento(dept) {
@@ -1070,6 +1048,7 @@
                             ultimaAtualizacao: new Date().toISOString()
                         };
                         
+                        // Não importa SKU duplicado
                         if (produto.sku && produto.descricao && !state.produtos.some(p => p.sku === produto.sku)) {
                             state.produtos.push(produto);
                             importados++;
@@ -1153,7 +1132,7 @@
             const sku = document.getElementById('mov-sku').value;
             const quantidade = parseInt(document.getElementById('mov-quantidade').value);
             const pedido = document.getElementById('mov-pedido').value;
-            const responsavel = document.getElementById('mov-responsavel').value;
+            const responsavel = state.currentUser.nome; // Usa o nome do usuário logado
 
             const produto = state.produtos.find(p => p.sku === sku);
             if (!produto) {
@@ -1369,10 +1348,7 @@
 
         // ==================== RENDER FUNCTIONS - Telas Principais ====================
         function renderLogin() {
-            const isLucas = state.loginRole === 'admin';
-            const isOp = state.loginRole === 'operador';
-            const isLeitor = state.loginRole === 'leitor';
-
+            // Removido o seletor de role visualmente, mas mantida a estrutura para preenchimento de teste
             return `
                 <div class="login-container">
                     <div class="login-box">
@@ -1380,17 +1356,16 @@
                         <p>Sistema de Gestão - Acesso</p>
                         <div id="login-alert"></div>
                         
-                        <p style="font-size: 13px; font-weight: 600; margin-bottom: 10px; text-align: left; color: var(--text-primary);">Selecione o Perfil:</p>
-                        <div class="role-selector">
-                            <button type="button" class="role-btn ${isLucas ? 'active-role' : ''}" onclick="setLoginRole('admin')">👑 Admin</button>
-                            <button type="button" class="role-btn ${isOp ? 'active-role' : ''}" onclick="setLoginRole('operador')">🛠️ Operador</button>
-                            <button type="button" class="role-btn ${isLeitor ? 'active-role' : ''}" onclick="setLoginRole('leitor')">👓 Leitor</button>
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="setLoginDefaults('admin')">Admin (Teste)</button>
+                            <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="setLoginDefaults('operador')">Operador (Teste)</button>
+                            <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="setLoginDefaults('leitor')">Leitor (Teste)</button>
                         </div>
-
+                        
                         <form onsubmit="return handleLoginSubmit(event)">
                             <div class="form-group">
                                 <label>Email</label>
-                                <input type="email" id="login-email" value="${isLucas ? 'lucas.vilella@policryl.com.br' : isOp ? 'operador@policryl.com.br' : 'leitor@policryl.com.br'}" required autofocus>
+                                <input type="email" id="login-email" value="lucas.vilella@policryl.com.br" required autofocus>
                             </div>
                             <div class="form-group">
                                 <label>Senha</label>
@@ -1399,7 +1374,7 @@
                             <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
                         </form>
                         <p style="margin-top: 20px; font-size: 12px; color: var(--text-secondary); text-align: center;">
-                            Senha de Teste padrão: 'password'
+                            Use o botão 'Admin (Teste)' para preencher as credenciais de administrador.
                         </p>
                     </div>
                 </div>
@@ -1473,6 +1448,7 @@
                 { id: 'nova-movimentacao', label: 'Cadastrar Movimentação', icon: '📈', visible: isAdmin || isOperator },
                 { id: 'novo-produto', label: 'Cadastrar Produto', icon: '➕', visible: isAdmin },
                 { id: 'importar', label: 'Importar Planilha', icon: '📤', visible: isAdmin },
+                // Configurações agrupadas (visível apenas para Admin)
                 { id: 'novo-responsavel', label: 'Gerenciar Responsáveis', icon: '👥', visible: isAdmin }, 
                 { id: 'nova-linha', label: 'Gerenciar Linhas', icon: '🏷️', visible: isAdmin } 
             ];
@@ -1573,6 +1549,7 @@
                         <div class="value">${stats.abaixo}</div>
                     </div>
                 </div>
+                
 
                 <div class="filters">
                     <div class="filters-grid">
@@ -1860,13 +1837,8 @@
                                 <input type="text" id="mov-pedido" placeholder="Ex: #12345">
                             </div>
                             <div class="form-group" style="grid-column: span 2;">
-                                <label>Responsável *</label>
-                                <select id="mov-responsavel" required>
-                                    <option value="">Selecione um responsável...</option>
-                                    ${state.responsaveis.filter(r => r.ativo).map(r => `
-                                        <option value="${r.nome} ${r.sobrenome}">${r.nome} ${r.sobrenome} - ${r.departamento}</option>
-                                    `).join('')}
-                                </select>
+                                <label>Responsável</label>
+                                <input type="text" value="${state.currentUser.nome}" disabled title="Preenchido automaticamente pelo usuário logado.">
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
@@ -2183,10 +2155,6 @@
         function renderEstoque() {
             const contentArea = document.getElementById('app-content-area');
             
-            // Oculta/Mostra o botão de exportar no Header
-            const headerActions = document.getElementById('app-header-actions');
-            if (headerActions) headerActions.innerHTML = '';
-            
             let content = '';
             switch(state.activeTab) {
                 case 'dashboard':
@@ -2221,7 +2189,6 @@
                     content = renderDashboard();
             }
             
-            // Recria a estrutura completa do app do estoque (Sidebar, Header, Content)
             return `
                 <div class="app-container">
                     <div class="sidebar">
